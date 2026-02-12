@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenEHR Archetype to PDF Form Generator</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- jsPDF for PDF generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- jsPDF-AutoTable for tables in PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🏥 OpenEHR Archetype to PDF Form Generator</h1>
+            <p class="subtitle">Upload an OpenEHR observation archetype (.adl file) and generate a fillable PDF form for clinical documentation</p>
+        </header>
+
+        <main>
+            <!-- Upload Section -->
+            <section class="upload-section">
+                <div class="upload-box" id="uploadBox">
+                    <div class="upload-icon">📁</div>
+                    <h3>Drop your ADL file here</h3>
+                    <p>or click to browse</p>
+                    <input type="file" id="fileInput" accept=".adl" hidden>
+                </div>
+                <div class="file-info" id="fileInfo" style="display: none;">
+                    <span class="file-name" id="fileName"></span>
+                    <button class="btn-remove" id="removeFile">✕</button>
+                </div>
+            </section>
+
+            <!-- Language Selection -->
+            <section class="options-section" id="optionsSection" style="display: none;">
+                <h3>📋 Form Options</h3>
+                <div class="option-group">
+                    <label for="languageSelect">Select Language:</label>
+                    <select id="languageSelect">
+                        <option value="en">English</option>
+                    </select>
+                </div>
+                <div class="option-group">
+                    <label for="formTitle">Form Title:</label>
+                    <input type="text" id="formTitle" placeholder="Enter custom title (optional)">
+                </div>
+                <div class="option-group checkbox-group">
+                    <label>
+                        <input type="checkbox" id="includeDescriptions" checked>
+                        Include field descriptions
+                    </label>
+                </div>
+                <div class="option-group checkbox-group">
+                    <label>
+                        <input type="checkbox" id="includeProtocol" checked>
+                        Include protocol/method fields
+                    </label>
+                </div>
+            </section>
+
+            <!-- Preview Section -->
+            <section class="preview-section" id="previewSection" style="display: none;">
+                <h3>📄 Archetype Preview</h3>
+                <div class="archetype-info" id="archetypeInfo">
+                    <!-- Populated by JavaScript -->
+                </div>
+                <div class="fields-preview" id="fieldsPreview">
+                    <!-- Populated by JavaScript -->
+                </div>
+            </section>
+
+            <!-- Generate Button -->
+            <section class="action-section" id="actionSection" style="display: none;">
+                <button class="btn-generate" id="generatePdf">
+                    <span class="btn-icon">📥</span>
+                    Generate Fillable PDF Form
+                </button>
+            </section>
+
+            <!-- Loading Overlay -->
+            <div class="loading-overlay" id="loadingOverlay" style="display: none;">
+                <div class="spinner"></div>
+                <p>Generating PDF...</p>
+            </div>
+        </main>
+
+        <footer>
+            <p>OpenEHR Archetype Form Generator | For clinical documentation purposes</p>
+            <p class="disclaimer">⚠️ This tool generates forms based on archetype structure. Always verify clinical accuracy.</p>
+        </footer>
+    </div>
+
+    <script src="adl-parser.js"></script>
+    <script src="pdf-generator.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

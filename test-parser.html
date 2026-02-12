@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ADL Parser Test</title>
+    <style>
+        body { font-family: monospace; padding: 20px; }
+        .success { color: green; }
+        .error { color: red; }
+        pre { background: #f5f5f5; padding: 10px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>ADL Parser Test Page</h1>
+    <p>Open browser console (F12) to see detailed parsing output.</p>
+    
+    <h2>Test Results:</h2>
+    <div id="results"></div>
+    
+    <h2>Ontology Sample:</h2>
+    <pre id="ontology"></pre>
+    
+    <h2>Data Fields:</h2>
+    <pre id="fields"></pre>
+
+    <script src="adl-parser.js"></script>
+    <script>
+        // Fetch the sample ADL file and test parsing
+        fetch('openEHR-EHR-OBSERVATION.blood_pressure.v2.adl')
+            .then(response => response.text())
+            .then(content => {
+                const parser = new ADLParser();
+                const archetype = parser.parse(content);
+                
+                const results = document.getElementById('results');
+                const ontologyDiv = document.getElementById('ontology');
+                const fieldsDiv = document.getElementById('fields');
+                
+                // Test results
+                let html = '';
+                
+                // Test 1: Archetype ID
+                const hasId = archetype.id && archetype.id.includes('blood_pressure');
+                html += `<p class="${hasId ? 'success' : 'error'}">✓ Archetype ID: ${archetype.id}</p>`;
+                
+                // Test 2: Concept resolved
+                const conceptResolved = archetype.conceptName && !archetype.conceptName.includes('at0000');
+                html += `<p class="${conceptResolved ? 'success' : 'error'}">`;
+                html += conceptResolved ? '✓' : '✗';
+                html += ` Concept: ${archetype.concept} → "${archetype.conceptName}"</p>`;
+                
+                // Test 3: Ontology parsed
+                const enOntology = archetype.ontology['en'] || {};
+                const termCount = Object.keys(enOntology).length;
+                const hasOntology = termCount > 0;
+                html += `<p class="${hasOntology ? 'success' : 'error'}">`;
+                html += hasOntology ? '✓' : '✗';
+                html += ` English ontology: ${termCount} terms</p>`;
+                
+                // Test 4: Key terms resolved
+                const keyTerms = ['at0000', 'at0004', 'at0005', 'at1006', 'at1007', 'at1059'];
+                keyTerms.forEach(code => {
+                    const term = enOntology[code];
+                    const resolved = term && term.text && !term.text.includes(code);
+                    html += `<p class="${resolved ? 'success' : 'error'}" style="margin-left: 20px;">`;
+                    html += resolved ? '✓' : '✗';
+                    html += ` ${code} → "${term ? term.text : 'NOT FOUND'}"</p>`;
+                });
+                
+                // Test 5: Data fields resolved
+                html += '<h3>Data Fields Resolution:</h3>';
+                archetype.definition.dataFields.forEach(field => {
+                    const resolved = field.name && !field.name.includes('at0') && !field.name.includes('Unknown');
+                    html += `<p class="${resolved ? 'success' : 'error'}" style="margin-left: 20px;">`;
+                    html += resolved ? '✓' : '✗';
+                    html += ` ${field.code} → "${field.name}" (${field.type})</p>`;
+                });
+                
+                results.innerHTML = html;
+                
+                // Show ontology sample
+                const sampleTerms = {};
+                ['at0000', 'at0004', 'at0005', 'at0008', 'at1000', 'at1001', 'at1006', 'at1007'].forEach(code => {
+                    sampleTerms[code] = enOntology[code] || 'NOT FOUND';
+                });
+                ontologyDiv.textContent = JSON.stringify(sampleTerms, null, 2);
+                
+                // Show data fields
+                const fieldsSummary = archetype.definition.dataFields.map(f => ({
+                    code: f.code,
+                    name: f.name,
+                    type: f.type
+                }));
+                fieldsDiv.textContent = JSON.stringify(fieldsSummary, null, 2);
+                
+                console.log('Full archetype object:', archetype);
+            })
+            .catch(err => {
+                document.getElementById('results').innerHTML = `<p class="error">Error: ${err.message}</p>`;
+                console.error(err);
+            });
+    </script>
+</body>
+</html>
